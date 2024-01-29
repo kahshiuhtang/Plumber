@@ -32,19 +32,22 @@ model User {
   reviewsGiven Review[]
   directMessages DirectMessage[]
 
-  conversationsInitiated Conversation[] @relation("MemberOne")
-  conversationsRecieved Conversation[] @relation("MemberTwo")
-
+  conversationsInitiated Conversation[] @relation("UserOne")
+  conversationsRecieved Conversation[] @relation("UserTwo")
 
   @@index([companyId])
 }
 
 model Company{
   id String @id @default(uuid())
-  employees User[]
-  ownerEmail String @unique
+  ownerEmail String
+  companyName String
 
   managedJobs JobRequest[] 
+  services Service[]
+  inventory Inventory[]
+  employees User[]
+  reviews Review[]
 
 }
 
@@ -54,47 +57,90 @@ model JobRequest{
 
   companyManaged Company? @relation(fields:[companyId], references: [id])
   companyId String 
-  userManaged User @relation(fields:[userId], references: [id])
+  userCreator User @relation(fields:[userId], references: [id])
   userId String
   
-
   @@index([userId])
+  @@index([companyId])
+}
+
+model Service{
+  id String @id @default(uuid())
+  company Company @relation(fields:[companyId], references:[id])
+  
+  serviceTitle String
+  serviceDescription String
+  companyId String
+  serviceName String[]
+  reviews Review[]
+
   @@index([companyId])
 }
 
 model Review{
   id String @id @default(uuid())
 
-  userManaged User @relation(fields:[userId], references: [id])
+  userCreator User @relation(fields:[userId], references: [id])
   userId String
 
+  rating Int
+  title String
+  description String
+  images String[]
+
+  serviceId String 
+  service Service? @relation(fields:[serviceId], references:[id])
+  companyId String
+  company Company? @relation(fields:[companyId], references:[id])
 
   @@index([userId])
+  @@index([companyId])
+  @@index([serviceId])
 }
 
 model Inventory{
   id String @id @default(uuid())
-}
+  items Item[]
 
+  company Company @relation(fields:[companyId], references:[id])
+  companyId String[]
+
+  @@index([companyId])
+}
 model Item{
   id String @id @default(uuid())
 
-}
+  inInventory Inventory @relation(fields: [inventoryId], references: [id])
+  inventoryId String
+  transactions ItemTransaction[]
 
+  @@index([inventoryId])
+}
+model ItemTransaction{
+  id String @id @default(uuid())
+
+  itemReference Item @relation(fields:[itemId], references:[id])
+  itemId String
+
+  quantity Float
+  description String @default("")
+
+  @@index(itemId)
+}
 model Conversation {
   id String @id @default(uuid())
 
-  memberOneId String
-  memberOne User @relation("MemberOne", fields:[memberOneId], references:[id], onDelete:Cascade)
+  userOneId String
+  userOne User @relation("UserOne", fields:[userOneId], references:[id], onDelete:Cascade)
 
-  memberTwoId String
-  memberTwo User @relation("MemberTwo", fields:[memberTwoId], references:[id], onDelete:Cascade)
+  userTwoId String
+  userTwo User @relation("UserTwo", fields:[userTwoId], references:[id], onDelete:Cascade)
   
   directMessages DirectMessage[]
-  @@index(memberTwoId)
+  @@index(userTwoId)
 
   // Cannot have two conversations with the same people
-  @@unique([memberOneId, memberTwoId])
+  @@unique([userOneId, userTwoId])
 }
 
 model DirectMessage{
@@ -102,8 +148,8 @@ model DirectMessage{
   content String
   fileUrl String?
 
-  memberId String
-  member User @relation(fields:[memberId], references: [id], onDelete: Cascade)
+  userId String
+  user User @relation(fields:[userId], references: [id], onDelete: Cascade)
 
   conversationId String
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
@@ -112,6 +158,6 @@ model DirectMessage{
   updatedAt DateTime @updatedAt
   deleted Boolean @default(false)
 
-  @@index([memberId])
+  @@index([userId])
   @@index([conversationId])
 }
