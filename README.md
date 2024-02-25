@@ -1,21 +1,11 @@
 # Tiam
 
+Free inventory management solution
+
 ## About
 
-Tiam is a job-matching application that allows clients to find and recommend service providers while allowing for businesses to track jobs, inventory and workers.
+This is intended to be a cheap alternative to buying barcode readers, configuring the reads and setting up a database. Many smaller companies may be able to spend large sums of money managing their inventory but it is a task that must be done regardless.
 
-## Getting Started
+## Usage
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Many items that need to be tracked should have an assoicated barcode. If not possible, we can generate paper barcodes to scan or attach to items for scanning.
